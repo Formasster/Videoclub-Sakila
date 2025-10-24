@@ -47,7 +47,7 @@
       color: #e6e6e6;
     }
     input[type="text"], input[type="email"], textarea, select {
-      width: 100%;
+      width: 90%;
       padding: 0.6rem;
       border: none;
       border-radius: 6px;
@@ -102,6 +102,9 @@
       margin-bottom: 1rem;
       border: 1px solid rgba(46,204,113,0.13);
     }
+    .secondary{
+        color: aqua;
+    }
     @media (max-width: 640px) {
       form { grid-template-columns: 1fr; }
     }
@@ -115,6 +118,10 @@
     <h2>Contacto</h2>
 
     <div class="card">
+        <div>
+        <p>Para contactar con nosotros llame a: +34 054 324 554.</p>
+            <p>O rellenar el formulario:</p></p>
+        </div>
 
       <div class="success" th:if="${enviado}">
         <strong>Tu mensaje se ha enviado correctamente. ¡Gracias!</strong>
@@ -136,6 +143,11 @@
           <label for="telefono">Teléfono (opcional)</label>
           <input type="text" id="telefono" name="telefono" placeholder="+34 600 00 00 00" />
         </div>
+        <div>
+          <label for="telefono">Dirección (opcional)</label>
+          <input type="text" id="direction" name="direction" placeholder="c/Constitucion 98, Gijón" />
+        </div>
+
 
         <div>
           <label for="asunto">Asunto</label>
@@ -158,11 +170,13 @@
 
         <div class="actions">
           <span class="hint">También puedes escribirnos a <strong>info@videoclubsakila.example</strong></span>
-          <div>
+          <br></br>
+          
+        </div>
+        <div>
             <button type="submit">Enviar mensaje</button>
             <a th:href="@{/}" class="secondary" style="text-decoration:none; margin-left:0.6rem; display:inline-block;">Volver</a>
           </div>
-        </div>
 
       </form>
 
