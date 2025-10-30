@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,6 +90,8 @@ public class MainController {
 
    }
 
+   
+
 	@SuppressWarnings("deprecation")
 	@GetMapping("/detallepelicula/{id_peli}")
 	public String detallePelicula(@PathVariable Integer id_peli, Model model) {
@@ -125,20 +128,11 @@ public class MainController {
 		return "detallepeli";
 	}
 		
-	@GetMapping("/clientes")
-	public String test(Model model) {
-		
-		//model.addAttribute("msg","Me has pasado como parámetro "+param);
-		//tener en cuenta cliente, 
-		
-		return "listadoclientes";
-	}
 
 	@GetMapping("/contacto")
 	public String mostrarContacto(Model model) {
 		return "contacto";
 	}
-	
 	
 	
 	public static List createList(ResultSet resultSet) throws SQLException {
@@ -169,8 +163,141 @@ public class MainController {
 	    log.info("Tamaño de la lista "+lista.size());
 	    return lista;
 		
-	}			
+	}	
 	
+	//Cliente
+
+   	@GetMapping("/clientes")
+	public String seleccionClientes(@RequestParam (required = false) String email, Model model) {
+		if (email == null) email = "";
+    	if (jdbcTemplate.getDataSource() == null) {
+        	model.addAttribute("error", "No DataSource configured");
+        	return "clientes";
+    	}
+
+		Connection connection = null; // Creamos el objeto para la conexión
+
+		try { // Importante trabajar con excepciones 
+		   // Con el jdbcTemplate de spring se encapsulan las operaiones con JDBC
+
+		   connection = jdbcTemplate.getDataSource().getConnection(); // Establecemos la conexión
+
+		   PreparedStatement ps=connection.prepareStatement("SELECT customer_id, first_name, last_name, email, active from customer WHERE email LIKE ?"); // Creamos  consulta
+		   ps.setString(1,email + "%"); // Pasamos el parámetro a la consulta 
+		   ResultSet clientes=ps.executeQuery(); // Ejecutamos la consulta parametrizada
+		   List<Cliente> lista = createListC(clientes);
+		   log.info("tamaño "+lista.size());
+		   model.addAttribute("listaClientes", lista ); 
+		   model.addAttribute("email", email == null ? "" : email);
+		   model.addAttribute(email, lista);
+		  
+
+		// Asignamos a la etiqueta de la plantilla “listaPelis.” un arrayList
+		} catch (SQLException e) { 
+		model.addAttribute("error", e.getMessage()); // Añadimos el mensaje de error a la plantilla
+		} 
+
+		return "clientes"; // Devolvemos la plantilla
+
+   }
+	
+	public static List createListC(ResultSet resultSet) throws SQLException {
+
+		List<Cliente> lista = new ArrayList<>();
+
+		// Obtenemos la información de las columnas (opcional)
+	    //ResultSetMetaData metadata = resultSet.getMetaData();
+	    //int numberOfColumns = metadata.getColumnCount();
+		
+	    Integer i=0;
+	    while (resultSet.next()) {
+	        Cliente c = new Cliente();
+	        
+	        // Asignamos los valores de las columnas a los atributos del objeto
+	        // Usa los nombres de columna reales de tu tabla (o índices si prefieres)
+	        c.setId(resultSet.getInt("customer_id"));            // o el nombre que uses en tu tabla
+	        c.setNombre(resultSet.getString("first_name"));
+	        c.setApellido(resultSet.getString("last_name"));
+	        c.setEmail(resultSet.getString("email"));
+			c.setActivo(resultSet.getInt("active"));
+	        log.info(c.toString());
+	        // Añadimos la película a la lista
+	       	lista.add(c);
+	        
+	    }
+	    log.info("Tamaño de la lista "+lista.size());
+	    return lista;
+		
+	}			
+
+	
+
+	@SuppressWarnings("deprecation")
+	@GetMapping("/detallecliente/{id_cli}")
+	public String detalleCliente(@PathVariable Integer id_cli, Model model) {
+		log.info("Detalle cliente "+ id_cli);
+		Cliente c = new Cliente();
+		String sql="SELECT customer_id, title, description, release_year, length, rating FROM film WHERE film_id = ?";
+		try {
+			c = jdbcTemplate.query(
+			        sql,
+			        (rs, rowNum) -> new Cliente(rs.getInt("customer_id"),
+	        				rs.getString("first_name"),
+	        				rs.getString("last_name"),
+	        				rs.getString("email"),
+							rs.getInt("active")),id_cli).getFirst();
+			  
+		
+				}catch (InvalidResultSetAccessException e)
+		{
+			model.addAttribute("error",e.getMessage());
+		}
+		catch (DataAccessException e)
+		{
+			model.addAttribute("error",e.getMessage());
+		}
+		
+		model.addAttribute("cliente",id_cli);
+		
+		return "detallecliente";
+	}
+
+	@GetMapping("/historial/{id_cli}")
+	public String historial(@PathVariable Integer id_cli, Model model) {
+		log.info("Historial cliente "+ id_cli);
+		Cliente c = new Cliente();
+		String sql = """
+						SELECT 
+							c.customer_id, 
+							CONCAT(c.first_name, ' ', c.last_name) AS cliente, 
+							f.title AS pelicula, 
+							r.rental_date AS fecha_alquiler, 
+							r.return_date AS fecha_devolucion, 
+							p.amount AS monto_pagado, 
+							p.payment_date AS fecha_pago
+						FROM rental r
+						INNER JOIN customer c ON r.customer_id = c.customer_id
+						INNER JOIN inventory i ON r.inventory_id = i.inventory_id
+						INNER JOIN film f ON i.film_id = f.film_id
+						LEFT JOIN payment p ON r.rental_id = p.rental_id
+						WHERE c.customer_id = ?
+						ORDER BY r.rental_date DESC;
+					""";
+
+		 try {
+				List<Map<String, Object>> historial = jdbcTemplate.queryForList(sql, id_cli);
+				model.addAttribute("historial", historial);
+				model.addAttribute("clienteId", id_cli);
+   		 } catch (DataAccessException e) {
+        		model.addAttribute("error", e.getMessage());
+    		}
+
+		
+		model.addAttribute("cliente",id_cli);
+		
+		return "historial";
+	}
+	//historial: rental > inventory > film > title 
 }
 
 
