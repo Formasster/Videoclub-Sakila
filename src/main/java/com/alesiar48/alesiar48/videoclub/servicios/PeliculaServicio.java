@@ -1,5 +1,7 @@
 package com.alesiar48.alesiar48.videoclub.servicios;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -11,14 +13,11 @@ import com.alesiar48.alesiar48.videoclub.modelo.Pelicula;
 
 @Service
 public class PeliculaServicio {
+
+	@Autowired
+	private JdbcTemplate jdbcTemplate;
     
-    //Obtener el número de películas
-
-    public Integer numPeliculas(List<Pelicula>pelis){
-        return pelis.size();
-    }
-
-    	
+  
 	public static List createList(ResultSet resultSet) throws SQLException {
 
 		List<Pelicula> lista = new ArrayList<>();
@@ -48,5 +47,31 @@ public class PeliculaServicio {
 	    return lista;
 		
 	}	
+
+	public List buscaPeliTitulo(String titulo) throws SQLException{
+
+		Connection connection = null; // Creamos el objeto para la conexión
+
+		try { // Importante trabajar con excepciones 
+		   // Con el jdbcTemplate de spring se encapsulan las operaiones con JDBC
+
+		   connection = jdbcTemplate.getDataSource().getConnection(); // Establecemos la conexión
+
+		   PreparedStatement ps=connection.prepareStatement("select film_id, title, description, length, rating from film WHERE title LIKE ?"); // Creamos  consulta
+		   ps.setString(1,titulo + "%");; // Pasamos el parámetro a la consulta 
+		   ResultSet pelis=ps.executeQuery(); // Ejecutamos la consulta parametrizada
+		   List<Pelicula> lista = new ArrayList<>();
+		   lista = createList(pelis);
+		   log.info("tamaño "+lista.size());
+		   model.addAttribute("listaPelis", lista); 
+
+		// Asignamos a la etiqueta de la plantilla “listaPelis.” un arrayList
+		} catch (SQLException e) { 
+		model.addAttribute("error", e.getMessage()); // Añadimos el mensaje de error a la plantilla
+		} 
+
+	}
+
+	
 	
 }

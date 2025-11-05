@@ -13,15 +13,8 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.InvalidResultSetAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-
 
 
 @Controller
@@ -30,7 +23,7 @@ public class MainController {
 	   JdbcTemplate jdbcTemplate;
 	   private PeliculaServicio peliculaServicio;
 
-	private static final Logger log= LoggerFactory.getLogger(VideoclubV1Application.class);
+	private static final Logger log = LoggerFactory.getLogger(VideoclubV1Application.class);
 	
 	@GetMapping("/catalogo")
 	public String catalogoPeliculas (@RequestParam (required=false) String pelicula, Model model) {
@@ -67,33 +60,15 @@ public class MainController {
 
 	//Pelicula
 
-	@GetMapping("/numPeliculas")
-	public String obtenerNumeroPeliculas(Model model){
-
-		Integer numpelis = PeliculaServicio.numPeliculas(listapelis);
-		model.addAttribute("resultado", numpelis);
-		return "vista1"; //hacer la vista 
-	}
-	
 	@GetMapping("/peliculas")
 	public String seleccionPeliculas(@RequestParam (required = false) String titulo, Model model) {
 
 		Connection connection = null; // Creamos el objeto para la conexión
 
-		try { // Importante trabajar con excepciones 
-		   // Con el jdbcTemplate de spring se encapsulan las operaiones con JDBC
-
-		   connection = jdbcTemplate.getDataSource().getConnection(); // Establecemos la conexión
-
-		   PreparedStatement ps=connection.prepareStatement("select film_id, title, description, length, rating from film WHERE title LIKE ?"); // Creamos  consulta
-		   ps.setString(1,titulo + "%");; // Pasamos el parámetro a la consulta 
-		   ResultSet pelis=ps.executeQuery(); // Ejecutamos la consulta parametrizada
-		   List<Pelicula> lista = new ArrayList<>();
-		   lista = createList(pelis);
-		   log.info("tamaño "+lista.size());
-		    model.addAttribute("listaPelis",lista ); 
+		try { 
+			List<Pelicula> lista = peliculaServicio.buscarPeliculasPorTitulo(titulo);
+			model.addAttribute("listapelis", lista);
 		  
-
 		// Asignamos a la etiqueta de la plantilla “listaPelis.” un arrayList
 		} catch (SQLException e) { 
 		model.addAttribute("error", e.getMessage()); // Añadimos el mensaje de error a la plantilla
@@ -134,7 +109,7 @@ public class MainController {
 			model.addAttribute("error",e.getMessage());
 		}
 		
-		log.info("Pelicula recuperada "+peli.getTitulo() );
+		log.info("Pelicula recuperada "+peli.getTitulo());
 		
 		model.addAttribute("pelicula",peli);
 		
@@ -191,7 +166,7 @@ public class MainController {
 	public String detalleCliente(@PathVariable Integer id_cli, Model model) {
 		log.info("Detalle cliente "+ id_cli);
 		Cliente c = new Cliente();
-		String sql="SELECT customer_id, title, description, release_year, length, rating FROM film WHERE film_id = ?";
+		String sql="SELECT customer_id, first_name, last_name, email, active FROM customer WHERE customer_id = ?";
 		try {
 			c = jdbcTemplate.query(
 			        sql,

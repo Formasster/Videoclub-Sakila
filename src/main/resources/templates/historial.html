@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Historial del Cliente</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="container mt-4">
+    <h2>Historial del Cliente</h2>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Película</th>
+                <th>Fecha Alquiler</th>
+                <th>Fecha Devolución</th>
+                <th>Monto Pagado</th>
+                <th>Fecha Pago</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="item : ${historial}">
+                <td th:text="${item.pelicula}"></td>
+                <td th:text="${item.fechaalquiler}"></td>
+                <td th:text="${item.fechadevolucion}"></td>
+                <td th:text="${item.montopagado}"></td>
+                <td th:text="${item.fechapago}"></td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

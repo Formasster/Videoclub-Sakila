@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        integrity="sha512-uL+H5XwM5oZjW4W1zZ8w6NnPf1f6bD+CxKMyOeK1Y1wKigK7w6mG6OIz3R4WqXhQmM0vD0H6tG7jOQy7fWvV2A=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+<body>
+
+<footer th:fragment="footer"
+        style="text-align:center; background-color:#001a33; padding:1rem;
+               margin-top:auto; font-size:0.9rem; color:#fff;">
+    
+    <p>
+        © 2025 Videoclub Sakila | Desarrollado con Spring Boot y Thymeleaf para DWES
+    </p>
+
+    <!-- 🔗 Enlaces del pie -->
+    <nav style="margin-top:0.5rem;">
+        
+       
+        <a th:href="@{/quienes-somos}" 
+           style="color:#f0c330; text-decoration:none; margin:0 0.7rem;">
+           Quiénes somos
+        </a>
+         <a th:href="@{/contacto}" style="color:#f0c330; text-decoration:none; margin:0 0.7rem;">Contacto</a>
+        <br></br>
+         <div class="social-icons">
+        <a href="https://www.instagram.com/videoclubsakila" target="_blank" title="Instagram" style="color: #fff;">Instagram
+          <img th:src="@{/images/logotipo-de-instagram.png}" src="/images/logotipo-de-instagram.png" style="height:25px; border-radius:8px;" alt="Instagram">
+        </a>
+        <a href="https://www.facebook.com/videoclubsakila" target="_blank" title="Facebook" style="color: #fff;">
+           Facebook<img th:src="@{/images/facebook.png}" src="/images/facebook.png" style="height:25px; border-radius:8px; margin-right: 10px; margin-left: 10px;" alt="Facebook">
+        </a>
+        <a href="https://x.com/videoclubsakila" target="_blank" title="X (Twitter)" style="color: #fff;">
+          X (Twitter)<img th:src="@{/images/medios-de-comunicacion-social.png}" src="/images/medios-de-comunicacion-social.png" style="height:25px; border-radius:8px;" alt="X">
+        </a>
+    </div>
+        
+    </nav>
+
+</footer>
+
+</body>
+</html>
+
