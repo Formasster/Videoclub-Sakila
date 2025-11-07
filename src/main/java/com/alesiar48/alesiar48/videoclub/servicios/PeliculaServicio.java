@@ -7,12 +7,20 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.dao.InvalidResultSetAccessException;
+import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.springframework.stereotype.Service;
 
 import com.alesiar48.alesiar48.videoclub.modelo.Pelicula;
 
 @Service
 public class PeliculaServicio {
+	  private static final Logger log = LoggerFactory.getLogger(PeliculaServicio.class);
 
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
@@ -52,7 +60,6 @@ public class PeliculaServicio {
 
 		Connection connection = null; // Creamos el objeto para la conexión
 
-		try { // Importante trabajar con excepciones 
 		   // Con el jdbcTemplate de spring se encapsulan las operaiones con JDBC
 
 		   connection = jdbcTemplate.getDataSource().getConnection(); // Establecemos la conexión
@@ -63,15 +70,39 @@ public class PeliculaServicio {
 		   List<Pelicula> lista = new ArrayList<>();
 		   lista = createList(pelis);
 		   log.info("tamaño "+lista.size());
-		   model.addAttribute("listaPelis", lista); 
+
 
 		// Asignamos a la etiqueta de la plantilla “listaPelis.” un arrayList
-		} catch (SQLException e) { 
-		model.addAttribute("error", e.getMessage()); // Añadimos el mensaje de error a la plantilla
-		} 
+	
+	}
+
+	public Pelicula detallepeliculaAux(Integer id_peli){
+
+		Pelicula peli = new Pelicula();
+
+		String sql="SELECT film_id, title, description, release_year, length, rating FROM film WHERE film_id = ?";
+		try {
+			peli = jdbcTemplate.query(
+			        sql,
+			        (rs, rowNum) -> new Pelicula(rs.getInt("film_id"),
+				            rs.getString("title"),
+				            rs.getString("description"),
+				            rs.getInt("length"),
+				            rs.getString("rating"),
+				            rs.getInt("release_year"),
+				            null
+				        ), id_peli)
+			    .getFirst();
+			  
+		
+				}catch (InvalidResultSetAccessException e)
+		{
+		}
+		log.info("Pelicula recuperada "+peli.getTitulo());
+		return peli;
 
 	}
 
 	
-	
+
 }
