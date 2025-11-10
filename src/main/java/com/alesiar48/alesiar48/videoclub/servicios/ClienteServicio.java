@@ -57,7 +57,7 @@ public class ClienteServicio {
 		
 	}			
 
-	public List<Cliente> seleccionClientes(String email) {
+	public List<Cliente> seleccionClientes(String email) throws SQLException {
 
 		Connection connection = null; // Creamos el objeto para la conexión
 
@@ -72,35 +72,29 @@ public class ClienteServicio {
 		   
 		   log.info("tamaño "+lista.size());
 
-		  
+		  return lista;
 
 		// Asignamos a la etiqueta de la plantilla “listaPelis.” un arrayList
 	}
 		
 	
-	public String detalleCliente(Integer id_cli) {
+	public Cliente detalleCliente(Integer id_cli) {
 		log.info("Detalle cliente "+ id_cli);
-		Cliente c = new Cliente();
+		Cliente cliente = new Cliente();
 
 		String sql="SELECT customer_id, first_name, last_name, email, active FROM customer WHERE customer_id = ?";
-		try {
-			c = jdbcTemplate.query(
+			cliente = jdbcTemplate.query(
 			        sql,
-			        (rs, rowNum) -> c(rs.getInt("customer_id"),
+			        (rs, rowNum) -> new Cliente(rs.getInt("customer_id"),
 	        				rs.getString("first_name"),
 	        				rs.getString("last_name"),
 	        				rs.getString("email"),
 							rs.getInt("active")),id_cli).getFirst();
-			  
-		
-				}catch (InvalidResultSetAccessException e)
-		{
-		
-		return c;
-		}
+			
+		return cliente;
 	}	
 
-	public List<Map<String, Object>> historial(Integer id_cli) {
+	public List<Map<String, Object>> historial(Integer id_cli) throws SQLException {
 		
 		Connection connection = null; // Creamos el objeto para la conexión
 
@@ -109,7 +103,6 @@ public class ClienteServicio {
 		   connection = jdbcTemplate.getDataSource().getConnection(); // Establecemos la conexión
 		   
 		log.info("Historial cliente "+ id_cli);
-		Cliente c = new Cliente();
 		String sql = """
 						SELECT 
 							c.customer_id, 
@@ -127,15 +120,15 @@ public class ClienteServicio {
 						WHERE c.customer_id = ?
 						ORDER BY r.rental_date DESC;
 					""";
+					 List<Map<String, Object>> historial = new ArrayList<>();
 
-		 try {
-				List<Map<String, Object>> historial = jdbcTemplate.queryForList(sql, id_cli);
+						try {
+								historial = jdbcTemplate.queryForList(sql, id_cli);
+						} catch (DataAccessException e) {
+								log.error("Error al obtener historial del cliente " + id_cli, e);
+						}
 
-   		 } catch (DataAccessException e) {
-
-    		}
-
-				return historial;
+    			return historial;
 	}
     
 }

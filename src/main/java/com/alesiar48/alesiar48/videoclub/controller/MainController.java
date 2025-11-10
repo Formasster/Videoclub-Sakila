@@ -62,7 +62,7 @@ public class MainController {
 		   // 6. Necesitamos un método auxiliar "createList" para pasar de ResultSet a Lista.
 		   // Pasamos a la plantilla la lista de películas
 		   
-		   model.addAttribute("listapelis", createList(pelis));
+		   model.addAttribute("listapelis", peliculaServicio.createList(pelis));
 		   
 		   } catch (SQLException e) { 
 		   model.addAttribute("error", e.getMessage()); // Añadimos el mensaje de error a la plantilla
@@ -109,7 +109,7 @@ public class MainController {
 	//Cliente
 
    	@GetMapping("/clientes")
-	public String seleccionClientes(@RequestParam (required = false) String email, Model model) {
+	public String seleccionClientes(@RequestParam (required = false) String email, Model model) throws SQLException {
 
 		List<Cliente> listaClientes = clienteServicio.seleccionClientes(email);
 		model.addAttribute("listaclientes", listaClientes);
@@ -122,7 +122,7 @@ public class MainController {
 
 	@SuppressWarnings("deprecation")
 	@GetMapping("/detallecliente/{id_cli}")
-	public Cliente detalleCliente(@PathVariable Integer id_cli, Model model) {
+	public String detalleCliente(@PathVariable Integer id_cli, Model model) {
 		log.info("Detalle cliente "+ id_cli);
 		Cliente c = new Cliente();
 		
@@ -141,17 +141,17 @@ public class MainController {
 		
 		model.addAttribute("c",id_cli);
 		
-		return "detallecliente";
+		return "detalleclient e";
 	}
 
 	@GetMapping("/historial/{id_cli}")
-	public String historial(@PathVariable Integer id_cli, Model model) {
+	public String historial(@PathVariable Integer id_cli, Model model) throws SQLException {
 		log.info("Historial cliente "+ id_cli);
 		Cliente c = new Cliente();
 	
-
+			List<Map<String, Object>> alquileres = new ArrayList<>();
 		 try {
-				List<Map<String, Object>> alquileres = clienteServicio.historial(id_cli);
+				alquileres = clienteServicio.historial(id_cli);
 				model.addAttribute("historial", alquileres);
 				model.addAttribute("clienteId", id_cli);
    		 } catch (DataAccessException e) {
